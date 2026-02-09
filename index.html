@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T4S Club Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌲 T4S Club</h1>
+            <div class="timezone-selector">
+                <button class="tz-btn active" data-tz="CET">CET</button>
+                <button class="tz-btn" data-tz="PST">PST</button>
+                <button class="tz-btn" data-tz="Yerevan">Ереван</button>
+            </div>
+        </header>
+
+        <section class="schedule">
+            <h2>Расписание</h2>
+            <div id="schedule-container">
+                <!-- Будет заполнено JS -->
+            </div>
+        </section>
+
+        <section class="checkin">
+            <button id="checkin-btn" class="primary-btn">
+                <span>✓</span> Я на сессии
+            </button>
+            <div id="checkin-status"></div>
+        </section>
+
+        <section class="stats">
+            <h2>Статистика</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="sessions-week">—</div>
+                    <div class="stat-label">Сессий на неделе</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="participants-today">—</div>
+                    <div class="stat-label">Участников сегодня</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="your-streak">—</div>
+                    <div class="stat-label">Твой стрик</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="new-members">—</div>
+                    <div class="stat-label">Новых за месяц</div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>Создано Хвоей 🌲</p>
+        </footer>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
