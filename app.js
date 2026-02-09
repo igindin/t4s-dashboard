@@ -1,16 +1,5 @@
-// Schedule data (from schedule.md)
-const scheduleData = [
-    { day: 'Пн, 9 фев', date: '2026-02-09', time: '10:00', duration: 45, title: 'Focus with Ilya', facilitator: 'Ilya', zoom: 'https://us06web.zoom.us/j/8505264478' },
-    { day: 'Пн, 9 фев', date: '2026-02-09', time: '14:00', duration: 45, title: 'Focus with Ilya', facilitator: 'Ilya', zoom: 'https://us06web.zoom.us/j/8505264478' },
-    { day: 'Пн, 9 фев', date: '2026-02-09', time: '16:30', duration: 45, title: 'Meditation with Michael', facilitator: 'Michael', zoom: 'https://us06web.zoom.us/j/83655452854' },
-    { day: 'Вт, 10 фев', date: '2026-02-10', time: '10:00', duration: 45, title: 'Focus with Ilya', facilitator: 'Ilya', zoom: 'https://us06web.zoom.us/j/8505264478' },
-    { day: 'Вт, 10 фев', date: '2026-02-10', time: '12:00', duration: 45, title: 'Focus with Vlad', facilitator: 'Vlad', zoom: 'https://us06web.zoom.us/j/82714804246' },
-    { day: 'Вт, 10 фев', date: '2026-02-10', time: '16:30', duration: 60, title: 'Shipping Studio', facilitator: 'Max', zoom: 'https://us06web.zoom.us/j/8505264478' },
-    { day: 'Ср, 11 фев', date: '2026-02-11', time: '10:00', duration: 45, title: 'Focus with Max', facilitator: 'Max', zoom: 'https://us06web.zoom.us/j/8505264478' },
-    { day: 'Ср, 11 фев', date: '2026-02-11', time: '12:00', duration: 45, title: 'Focus with Vlad', facilitator: 'Vlad', zoom: 'https://us06web.zoom.us/j/82714804246' },
-    { day: 'Ср, 11 фев', date: '2026-02-11', time: '12:00', duration: 45, title: 'Music Focus', facilitator: 'Michael', zoom: 'https://us06web.zoom.us/j/86580160735' },
-    { day: 'Ср, 11 фев', date: '2026-02-11', time: '16:30', duration: 45, title: 'Breathwork with Olya', facilitator: 'Olya', zoom: 'https://us06web.zoom.us/j/8505264478' },
-];
+// Schedule will be loaded from schedule.json
+let scheduleData = [];
 
 // Timezone offsets from UTC
 const timezones = {
@@ -33,20 +22,11 @@ function convertTime(utcTime, tz) {
     return `${String(newHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
-// Calculate end time
-function addMinutes(time, minutes) {
-    const [hours, mins] = time.split(':').map(Number);
-    let totalMins = hours * 60 + mins + minutes;
-    const newHours = Math.floor(totalMins / 60) % 24;
-    const newMins = totalMins % 60;
-    return `${String(newHours).padStart(2, '0')}:${String(newMins).padStart(2, '0')}`;
-}
-
 // Check if session is happening now
 function isCurrentSession(session) {
     const now = new Date();
     const sessionDate = new Date(session.date + 'T' + session.time + ':00Z');
-    const sessionEnd = new Date(sessionDate.getTime() + session.duration * 60000);
+    const sessionEnd = new Date(session.date + 'T' + session.endTime + ':00Z');
     return now >= sessionDate && now < sessionEnd;
 }
 
@@ -63,7 +43,7 @@ function renderSchedule() {
         }))
         .filter(session => {
             const daysDiff = Math.floor((session.datetime - now) / (1000 * 60 * 60 * 24));
-            return daysDiff >= 0 && daysDiff <= 2;
+            return daysDiff >= -1 && daysDiff <= 2; // Include today even if time passed
         })
         .sort((a, b) => a.datetime - b.datetime);
     
@@ -74,7 +54,7 @@ function renderSchedule() {
     
     container.innerHTML = relevantSessions.map(session => {
         const localTime = convertTime(session.time, currentTZ);
-        const localEndTime = convertTime(addMinutes(session.time, session.duration), currentTZ);
+        const localEndTime = convertTime(session.endTime, currentTZ);
         const isCurrent = isCurrentSession(session);
         const currentClass = isCurrent ? ' style="border: 2px solid var(--accent); background: #f0fff0;"' : '';
         const currentBadge = isCurrent ? '<span style="background: var(--accent); color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">СЕЙЧАС</span>' : '';
@@ -90,7 +70,7 @@ function renderSchedule() {
                 </div>
                 <div class="schedule-title">${session.title}</div>
                 <div class="schedule-facilitator">with ${session.facilitator}</div>
-                <a href="${session.zoom}" target="_blank" class="schedule-link">→ Zoom</a>
+                ${session.zoom ? `<a href="${session.zoom}" target="_blank" class="schedule-link">→ Zoom</a>` : ''}
             </div>
         `;
     }).join('');
@@ -161,6 +141,16 @@ function updateStats() {
     document.getElementById('new-members').textContent = Math.floor(Math.random() * 5) + 2; // Mock
 }
 
-// Initialize
-renderSchedule();
-updateStats();
+// Load schedule and initialize
+fetch('schedule.json')
+    .then(r => r.json())
+    .then(data => {
+        scheduleData = data;
+        renderSchedule();
+        updateStats();
+    })
+    .catch(err => {
+        console.error('Failed to load schedule:', err);
+        document.getElementById('schedule-container').innerHTML = 
+            '<p style="color: var(--text-secondary)">Ошибка загрузки расписания</p>';
+    });
